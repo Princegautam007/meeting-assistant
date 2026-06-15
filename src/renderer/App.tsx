@@ -9,8 +9,10 @@ interface Session {
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [duration, setDuration] = useState("00:00");
+  const [micLevel, setMicLevel] = useState(0);
 
-  const [transcripts, setTranscripts] = useState<string[]>([]);
+  const [transcripts, setTranscripts] =
+    useState<string[]>([]);
 
   const [responses] = useState([
     "AI insights will appear here.",
@@ -19,7 +21,8 @@ function App() {
   ]);
 
   async function handleStart() {
-    const result = await window.capsule.startSession();
+    const result =
+      await window.capsule.startSession();
 
     console.log("SESSION:", result);
 
@@ -27,56 +30,67 @@ function App() {
   }
 
   async function requestMic() {
-  try {
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true
-      });
+    try {
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
 
-    const audioContext =
-      new AudioContext();
+      const audioContext =
+        new AudioContext();
 
-    const source =
-      audioContext.createMediaStreamSource(stream);
+      const source =
+        audioContext.createMediaStreamSource(
+          stream
+        );
 
-    const analyser =
-      audioContext.createAnalyser();
+      const analyser =
+        audioContext.createAnalyser();
 
-    analyser.fftSize = 256;
+      analyser.fftSize = 256;
 
-    source.connect(analyser);
+      source.connect(analyser);
 
-    const data =
-      new Uint8Array(
-        analyser.frequencyBinCount
+      const data =
+        new Uint8Array(
+          analyser.frequencyBinCount
+        );
+
+      setInterval(() => {
+        analyser.getByteFrequencyData(data);
+
+        const avg =
+          data.reduce((a, b) => a + b, 0) /
+          data.length;
+
+        const level =
+          Math.round(avg);
+
+        setMicLevel(level);
+
+        console.log(
+          "MIC LEVEL:",
+          level
+        );
+      }, 500);
+
+      alert("Microphone connected");
+    } catch (err) {
+      console.error(err);
+
+      alert(
+        "Microphone access denied"
       );
-
-    setInterval(() => {
-      analyser.getByteFrequencyData(data);
-
-      const avg =
-        data.reduce((a, b) => a + b, 0) /
-        data.length;
-
-      console.log(
-        "MIC LEVEL:",
-        Math.round(avg)
-      );
-    }, 500);
-
-    alert("Microphone connected");
-  } catch (err) {
-    console.error(err);
-
-    alert("Microphone access denied");
+    }
   }
-}
+
   useEffect(() => {
     if (!session) return;
 
     const timer = setInterval(() => {
       const elapsed = Math.floor(
-        (Date.now() - session.startTime) / 1000
+        (Date.now() - session.startTime) /
+          1000
       );
 
       const mins = String(
@@ -94,131 +108,231 @@ function App() {
   }, [session]);
 
   useEffect(() => {
-    window.capsule.onTranscript((text) => {
-      setTranscripts((prev) => [...prev, text]);
-    });
+    window.capsule.onTranscript(
+      (text: string) => {
+        setTranscripts((prev) => [
+          ...prev,
+          text
+        ]);
+      }
+    );
   }, []);
 
   return (
     <div
       style={{
-        background: "#111827",
-        color: "white",
+        background:
+          "linear-gradient(135deg,#0f172a,#020617)",
         minHeight: "100vh",
-        padding: "24px",
-        fontFamily: "Segoe UI"
+        color: "white",
+        padding: "36px",
+        fontFamily:
+          "'Segoe UI', sans-serif"
       }}
     >
-      <h1>🧠 Capsule AI</h1>
-
-      <button
-        onClick={handleStart}
+      <h1
         style={{
-          padding: "10px 16px",
-          borderRadius: 8,
-          border: "none",
-          cursor: "pointer"
+          fontSize: "54px",
+          marginBottom: "24px"
         }}
       >
-        {session ? "Running..." : "Start Session"}
-      </button>
+        🧠 Capsule AI
+      </h1>
 
-      <button
-       onClick={requestMic}
+      <div
         style={{
-         marginLeft: 10,
-         padding: "10px 16px",
-         borderRadius: 8,
-         border: "none",
-         cursor: "pointer"
-       }}
+          display: "flex",
+          gap: "12px",
+          marginBottom: "24px"
+        }}
       >
-      Test Microphone
-</button>
+        <button
+          onClick={handleStart}
+          style={{
+            padding:
+              "12px 24px",
+            borderRadius: 12,
+            border: "none",
+            cursor: "pointer",
+            fontSize: "16px"
+          }}
+        >
+          {session
+            ? "Running..."
+            : "Start Session"}
+        </button>
+
+        <button
+          onClick={requestMic}
+          style={{
+            padding:
+              "12px 24px",
+            borderRadius: 12,
+            border: "none",
+            cursor: "pointer",
+            fontSize: "16px"
+          }}
+        >
+          Test Microphone
+        </button>
+      </div>
 
       {session && (
         <div
           style={{
-            marginTop: 20,
-            padding: 16,
-            background: "#1f2937",
-            borderRadius: 10
+            background: "#1e293b",
+            borderRadius: 16,
+            padding: "24px",
+            marginBottom: "24px"
           }}
         >
-          <h3>🟢 Session Active</h3>
+          <h2>
+            🟢 Session Active
+          </h2>
 
           <p>
-            <strong>ID:</strong> {session.id}
+            <strong>ID:</strong>{" "}
+            {session.id}
           </p>
 
           <p>
-            <strong>Duration:</strong> {duration}
+            <strong>
+              Duration:
+            </strong>{" "}
+            {duration}
           </p>
+
+          <div
+            style={{
+              marginTop: "20px"
+            }}
+          >
+            <p>
+              <strong>
+                🎤 Mic Level
+              </strong>
+            </p>
+
+            <div
+              style={{
+                width: "100%",
+                height: "18px",
+                background:
+                  "#374151",
+                borderRadius:
+                  "10px",
+                overflow:
+                  "hidden"
+              }}
+            >
+              <div
+                style={{
+                  width: `${Math.min(
+                    micLevel * 2,
+                    100
+                  )}%`,
+                  height: "100%",
+                  background:
+                    "#22c55e",
+                  transition:
+                    "0.2s"
+                }}
+              />
+            </div>
+
+            <p
+              style={{
+                marginTop: "8px"
+              }}
+            >
+              {micLevel}
+            </p>
+          </div>
         </div>
       )}
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 20,
-          marginTop: 20
+          gridTemplateColumns:
+            "1fr 1fr",
+          gap: "24px"
         }}
       >
         <div
           style={{
-            background: "#1f2937",
-            borderRadius: 10,
-            padding: 16,
-            height: 400,
+            background: "#1e293b",
+            borderRadius: "16px",
+            padding: "24px",
+            height: "500px",
             overflowY: "auto"
           }}
         >
-          <h2>📝 Transcript Panel</h2>
+          <h2>
+            📝 Transcript Panel
+          </h2>
 
-          {transcripts.length === 0 && (
-            <p>No transcript yet...</p>
+          {transcripts.length ===
+            0 && (
+            <p>
+              Waiting for
+              transcript...
+            </p>
           )}
 
-          {transcripts.map((line, index) => (
-            <div
-              key={index}
-              style={{
-                marginBottom: 12,
-                padding: 10,
-                background: "#374151",
-                borderRadius: 6
-              }}
-            >
-              {line}
-            </div>
-          ))}
+          {transcripts.map(
+            (line, index) => (
+              <div
+                key={index}
+                style={{
+                  background:
+                    "#374151",
+                  padding:
+                    "12px",
+                  borderRadius:
+                    "10px",
+                  marginBottom:
+                    "12px"
+                }}
+              >
+                {line}
+              </div>
+            )
+          )}
         </div>
 
         <div
           style={{
-            background: "#1f2937",
-            borderRadius: 10,
-            padding: 16,
-            height: 400,
+            background: "#1e293b",
+            borderRadius: "16px",
+            padding: "24px",
+            height: "500px",
             overflowY: "auto"
           }}
         >
-          <h2>🤖 AI Assistant</h2>
+          <h2>
+            🤖 AI Assistant
+          </h2>
 
-          {responses.map((line, index) => (
-            <div
-              key={index}
-              style={{
-                marginBottom: 12,
-                padding: 10,
-                background: "#374151",
-                borderRadius: 6
-              }}
-            >
-              {line}
-            </div>
-          ))}
+          {responses.map(
+            (line, index) => (
+              <div
+                key={index}
+                style={{
+                  background:
+                    "#374151",
+                  padding:
+                    "12px",
+                  borderRadius:
+                    "10px",
+                  marginBottom:
+                    "12px"
+                }}
+              >
+                {line}
+              </div>
+            )
+          )}
         </div>
       </div>
     </div>
