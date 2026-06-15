@@ -1,0 +1,59 @@
+{
+  "name": "meeting-assistant",
+  "version": "0.1.0",
+  "description": "Real-time AI meeting & interview assistant",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "concurrently \"tsc -w -p tsconfig.main.json\" \"vite\" \"wait-on dist/main/index.js && electron .\"",
+    "build": "tsc -p tsconfig.main.json && vite build",
+    "package": "electron-builder",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@deepgram/sdk": "^3.5.0",
+    "axios": "^1.7.0",
+    "cheerio": "^1.0.0",
+    "electron-store": "^10.0.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.4.38",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^8.0.0",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.0.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.0.0",
+    "vite-plugin-electron": "^0.28.0",
+    "wait-on": "^7.0.0"
+  },
+  "build": {
+    "appId": "com.meetingassistant.app",
+    "productName": "Meeting Assistant",
+    "mac": {
+      "target": "dmg",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "your-username",
+        "repo": "meeting-assistant"
+      }
+    ]
+  }
+}
