@@ -9,5 +9,9 @@ interface Window {
     startSession(): Promise<Session>;
     stopSession(): Promise<Session | null>;
     getSession(): Promise<Session | null>;
+
+    onTranscript(
+      callback: (text: string) => void
+    ): void;
   };
 }

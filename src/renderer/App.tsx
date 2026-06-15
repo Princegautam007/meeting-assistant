@@ -10,11 +10,7 @@ function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [duration, setDuration] = useState("00:00");
 
-  const [transcripts] = useState([
-    "Welcome to Capsule.",
-    "This is a mock transcript message.",
-    "Live transcripts will appear here."
-  ]);
+  const [transcripts, setTranscripts] = useState<string[]>([]);
 
   const [responses] = useState([
     "AI insights will appear here.",
@@ -24,6 +20,9 @@ function App() {
 
   async function handleStart() {
     const result = await window.capsule.startSession();
+
+    console.log("SESSION:", result);
+
     setSession(result);
   }
 
@@ -35,14 +34,25 @@ function App() {
         (Date.now() - session.startTime) / 1000
       );
 
-      const mins = String(Math.floor(elapsed / 60)).padStart(2, "0");
-      const secs = String(elapsed % 60).padStart(2, "0");
+      const mins = String(
+        Math.floor(elapsed / 60)
+      ).padStart(2, "0");
+
+      const secs = String(
+        elapsed % 60
+      ).padStart(2, "0");
 
       setDuration(`${mins}:${secs}`);
     }, 1000);
 
     return () => clearInterval(timer);
   }, [session]);
+
+  useEffect(() => {
+    window.capsule.onTranscript((text) => {
+      setTranscripts((prev) => [...prev, text]);
+    });
+  }, []);
 
   return (
     <div
@@ -107,6 +117,10 @@ function App() {
           }}
         >
           <h2>📝 Transcript Panel</h2>
+
+          {transcripts.length === 0 && (
+            <p>No transcript yet...</p>
+          )}
 
           {transcripts.map((line, index) => (
             <div
