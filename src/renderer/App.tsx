@@ -26,6 +26,22 @@ function App() {
     setSession(result);
   }
 
+  async function requestMic() {
+   try {
+     const stream =
+       await navigator.mediaDevices.getUserMedia({
+         audio: true
+       });
+
+     console.log("MIC OK", stream);
+
+     alert("Microphone access granted");
+   } catch (err) {
+     console.error(err);
+
+     alert("Microphone access denied");
+   }
+ }
   useEffect(() => {
     if (!session) return;
 
@@ -77,6 +93,19 @@ function App() {
       >
         {session ? "Running..." : "Start Session"}
       </button>
+
+      <button
+       onClick={requestMic}
+        style={{
+         marginLeft: 10,
+         padding: "10px 16px",
+         borderRadius: 8,
+         border: "none",
+         cursor: "pointer"
+       }}
+      >
+      Test Microphone
+</button>
 
       {session && (
         <div
