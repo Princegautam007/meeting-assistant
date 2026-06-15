@@ -27,21 +27,50 @@ function App() {
   }
 
   async function requestMic() {
-   try {
-     const stream =
-       await navigator.mediaDevices.getUserMedia({
-         audio: true
-       });
+  try {
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
 
-     console.log("MIC OK", stream);
+    const audioContext =
+      new AudioContext();
 
-     alert("Microphone access granted");
-   } catch (err) {
-     console.error(err);
+    const source =
+      audioContext.createMediaStreamSource(stream);
 
-     alert("Microphone access denied");
-   }
- }
+    const analyser =
+      audioContext.createAnalyser();
+
+    analyser.fftSize = 256;
+
+    source.connect(analyser);
+
+    const data =
+      new Uint8Array(
+        analyser.frequencyBinCount
+      );
+
+    setInterval(() => {
+      analyser.getByteFrequencyData(data);
+
+      const avg =
+        data.reduce((a, b) => a + b, 0) /
+        data.length;
+
+      console.log(
+        "MIC LEVEL:",
+        Math.round(avg)
+      );
+    }, 500);
+
+    alert("Microphone connected");
+  } catch (err) {
+    console.error(err);
+
+    alert("Microphone access denied");
+  }
+}
   useEffect(() => {
     if (!session) return;
 
