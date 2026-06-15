@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useSpeechRecognition }
+from "./hooks/useSpeechRecognition";
 
 interface Session {
   id: string;
@@ -19,6 +21,13 @@ function App() {
     "Meeting summaries can be generated.",
     "Action items can be extracted."
   ]);
+
+  useSpeechRecognition((text) => {
+   setTranscripts((prev) => [
+     ...prev,
+     text
+    ]);
+  });
 
   async function handleStart() {
     const result =
